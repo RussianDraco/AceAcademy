@@ -70,10 +70,11 @@ def home_section():
         screen.blit(text, (xaxis_centering(text.get_width()), 225 + 22 * x))
 
 class Button:
-    def __init__(self, x, y, width, height, text, action=None):
+    def __init__(self, x, y, width, height, text, action=None, secondaryAction=None):
         self.rect = pg.Rect(x, y, width, height)
         self.text = text
         self.action = action
+        self.secondaryAction = secondaryAction
         self.shown = True
 
     def draw(self):
@@ -88,6 +89,8 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 if self.action:
                     self.action()
+                if self.secondaryAction:
+                    self.secondaryAction()
 
     def setShown(self, bol):
         self.shown = bol
@@ -438,16 +441,55 @@ class StudyTimerSection:
 
         #self.studytimer_section()
 
+class Settings:
+    def __init__(self):
+        self.nomousebutton = Button(xaxis_centering(200) - 70, 100, 200, 30, "No Mouse", self.no_mouse, self.open_settings)
+        self.DOnoMouse = False
+        self.dictationbutton = Button(xaxis_centering(200) - 70, 150, 200, 30, "Dictation", self.dictation, self.open_settings)
+        self.DOdictation = False
+
+        self.optionButtons = [self.nomousebutton, self.dictationbutton]
+
+    def draw_toggle(self, x, y, istoggle):
+        pg.draw.rect(screen, (169, 169, 169), (x, y, 40, 40))
+        if istoggle:
+            pg.draw.circle(screen, (0, 0, 0), (x + 20, y + 20), 10)
+
+    def no_mouse(self):
+        self.DOnoMouse = not self.DOnoMouse
+    def dictation(self):
+        self.DOdictation = not self.DOdictation
+
+    def open_settings(self):
+        generate_topbar()
+
+        self.update()
+
+    def update(self):
+        generate_topbar()
+
+        self.nomousebutton.setShown(True)
+        self.nomousebutton.draw()
+        self.draw_toggle(xaxis_centering(50) + 70, 100, self.DOnoMouse)
+
+        self.dictationbutton.setShown(True)
+        self.dictationbutton.draw()
+        self.draw_toggle(xaxis_centering(50) + 70, 150, self.DOdictation)
+
+
 #Sections
 flashcardsection = FlashcardSection()
 studytimersection = StudyTimerSection()
+settings = Settings()
 
 #Top bar buttons
 homebutton = Button(75, 10, 200, 30, "Home", home_section)
 flashbutton = Button(300, 10, 200, 30, "Flashcards", flashcardsection.open_flashcard_section)
 studytimerbutton = Button(525, 10, 200, 30, "Study Timer", studytimersection.open_studytimer_section)
 
-navbarbuttons = [homebutton, flashbutton, studytimerbutton]
+settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
+
+navbarbuttons = [homebutton, flashbutton, studytimerbutton, settingsbutton]
 
 text_input = TextInputField(100, 100, 300, 40)
 
@@ -456,7 +498,8 @@ all_buttons = [navbarbuttons]
 extra_event_handling = [
     flashcardsection.flashcarddecks, 
     [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton],
-    studytimersection.optionButtons
+    studytimersection.optionButtons,
+    settings.optionButtons
     ]
 
 home_section()
