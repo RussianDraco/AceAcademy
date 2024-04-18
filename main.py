@@ -765,10 +765,10 @@ class Journal:
             x = 100
             y = 150
             for i, journal in enumerate(self.journals):
-                text = font(20).render(journal["name"], True, RED if self.selected_journal == journal["name"] else FONTCOLOR)
+                text = font(35).render(journal["name"], True, RED if self.selected_journal == journal["name"] else FONTCOLOR)
                 screen.blit(text, (x, y))
                 self.current_displayed_names.append((pg.rect.Rect(x, y, text.get_width(), text.get_height()), journal['name']))
-                x += 100
+                x += 125
             self.addjournalbutton.setShown(True)
             self.addjournalbutton.draw()
             
@@ -1123,9 +1123,10 @@ while running:
             if (right[0].y - right[1].y) <= 0.0127:
                 pyautogui.click(button='right')
                 pyautogui.sleep(1)
-                
-        cv2.imshow("Eye Cam View", frame)
-        cv2.waitKey(1)
+        
+        if showtheimage:   
+            cv2.imshow("Eye Cam View", frame)
+            cv2.waitKey(1)
 
     # Update the display
     pg.display.flip()
