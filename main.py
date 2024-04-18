@@ -36,12 +36,28 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BACKGROUND = (23, 4, 25)
 TEXT_LIMIT = 19
+FONTCOLOR = WHITE
 
 DARK_BUTTON_COLOUR = (90, 66, 107)
 LIGHT_BUTTON_COLOUR = (142, 115, 162)
 BUTTON_TEXT_COLOR = (255, 255, 255)
 FONT = pg.font.Font('resources/etna.ttf', 20)
 FONT28 = pg.font.Font(None, 25)
+
+def get_colors(norm = True):
+    global DARK_BUTTON_COLOUR, LIGHT_BUTTON_COLOUR, BUTTON_TEXT_COLOR, BACKGROUND, FONTCOLOR
+    if norm:
+        DARK_BUTTON_COLOUR = (90, 66, 107)
+        LIGHT_BUTTON_COLOUR = (142, 115, 162)
+        BUTTON_TEXT_COLOR = (255, 255, 255)
+        BACKGROUND = (23, 4, 25)
+        FONTCOLOR = WHITE
+    else:
+        DARK_BUTTON_COLOUR = (75, 75, 75)
+        LIGHT_BUTTON_COLOUR = (125, 125, 125)
+        BUTTON_TEXT_COLOR = (255, 255, 255)
+        BACKGROUND = (255, 255, 255)
+        FONTCOLOR = BLACK
 
 # Accessibility
 full_hand_tracking = False
@@ -177,7 +193,7 @@ class Button:
         self.shown = bol
 
 class TextInputField:
-    def __init__(self, x, y, width, height, shiftWrap = True, overrideColour = WHITE):
+    def __init__(self, x, y, width, height, shiftWrap = True, overrideColour = FONTCOLOR):
         self.x = x; self.y = y; self.width = width; self.height = height
         self.rect = pg.Rect(x + 2, y + 2, width - 4, height - 4)
         self.backrect = pg.Rect(x, y, width, height)
@@ -560,7 +576,7 @@ class StudyTimerSection:
             if len(strm) == 1: strm = "0" + strm
             if len(strs) == 1: strs = "0" + strs
 
-            text = font(150).render(strm + ":" + strs, True, WHITE) #omitted {str(h)} for now bc its unneccesary
+            text = font(150).render(strm + ":" + strs, True, FONTCOLOR) #omitted {str(h)} for now bc its unneccesary
             screen.blit(text, (xaxis_centering(text.get_width()), 100))
 
         #self.studytimer_section()
@@ -573,8 +589,10 @@ class Settings:
         self.DOdictation = False
         self.handtrackingbutton = Button(xaxis_centering(200) - 70, 200, 200, 30, "Full Hand Tracking", self.handtracking, self.open_settings)
         self.DOhandtracking = False
+        self.colorblindbutton = Button(xaxis_centering(200) - 70, 250, 200, 30, "Colorblind Mode", self.colorblind, self.open_settings)
+        self.DOcolorblind = False
 
-        self.optionButtons = [self.nomousebutton, self.dictationbutton, self.handtrackingbutton]
+        self.optionButtons = [self.nomousebutton, self.dictationbutton, self.handtrackingbutton, self.colorblindbutton]
 
     def draw_toggle(self, x, y, istoggle):
         pg.draw.rect(screen, (169, 169, 169), (x, y, 40, 40))
@@ -587,6 +605,8 @@ class Settings:
         self.DOdictation = not self.DOdictation
     def handtracking(self):
         self.DOhandtracking = not self.DOhandtracking; global full_hand_tracking; full_hand_tracking = self.DOhandtracking
+    def colorblind(self):
+        self.DOcolorblind = not self.DOcolorblind; get_colors(not self.DOcolorblind)
 
     def open_settings(self):
         global CURRENT_SRC; CURRENT_SRC = "settings"
@@ -608,6 +628,10 @@ class Settings:
         self.handtrackingbutton.setShown(True)
         self.handtrackingbutton.draw()
         self.draw_toggle(xaxis_centering(50) + 70, 200, self.DOhandtracking)
+
+        self.colorblindbutton.setShown(True)
+        self.colorblindbutton.draw()
+        self.draw_toggle(xaxis_centering(50) + 70, 250, self.DOcolorblind)
 
 class Journal:
     def __init__(self):
@@ -741,7 +765,7 @@ class Journal:
             x = 100
             y = 150
             for i, journal in enumerate(self.journals):
-                text = font(20).render(journal["name"], True, RED if self.selected_journal == journal["name"] else WHITE)
+                text = font(20).render(journal["name"], True, RED if self.selected_journal == journal["name"] else FONTCOLOR)
                 screen.blit(text, (x, y))
                 self.current_displayed_names.append((pg.rect.Rect(x, y, text.get_width(), text.get_height()), journal['name']))
                 x += 100
@@ -767,11 +791,11 @@ class Journal:
 
         elif self.journal_state == "create":
             self.JournalText.initTextInput(250, 100, self.set_new_journal_name, chrlmt=100)
-            text = font(30).render("Title", True, WHITE)
+            text = font(30).render("Title", True, FONTCOLOR)
             screen.blit(text, (150, 100))
             
             self.JournalName.initTextInput(250, 200, self.set_new_journal_text, chrlmt=1000)
-            text = font(30).render("Text", True, WHITE)
+            text = font(30).render("Text", True, FONTCOLOR)
             screen.blit(text, (150, 200))
             
             self.save_journal_button.setShown(True)
@@ -790,11 +814,11 @@ class Journal:
             self.save_journal_button.setShown(False)
             self.save_journal_button.draw()
 
-            text = font(30).render(self.display_target["name"], True, WHITE)
+            text = font(30).render(self.display_target["name"], True, FONTCOLOR)
             screen.blit(text, (150, 100))
             
             for x, txt in enumerate(wrap_text(self.display_target["content"], 47)):
-                text = font(30).render(txt, True, WHITE)
+                text = font(30).render(txt, True, FONTCOLOR)
                 screen.blit(text, (150, 200 + x * 30))
 
             #text = font(30).render(self.display_target["content"], True, WHITE)
@@ -820,7 +844,7 @@ class Journal:
                         break
 
                 for x, txt in enumerate(wrap_text(blurtingTxt, 47)):
-                    text = font(30).render(txt, True, WHITE)
+                    text = font(30).render(txt, True, FONTCOLOR)
                     screen.blit(text, (50, 200 + x * 30))
 
             self.blurt_text_input.draw(screen)
@@ -903,10 +927,10 @@ class Schedule:
 
     def schedule_section(self):
         for i, x in enumerate(['3 Days Ago', '2 Days Ago', 'Yesterday']):
-            text = font(20).render(x, True, WHITE)
+            text = font(20).render(x, True, FONTCOLOR)
             screen.blit(text, (50 + i * 150, HEIGHT - 100))
             time_str = str(dt.timedelta(milliseconds=self.safe_json(days_ago(3 - i)))).split('.')[0]
-            text = font(17).render(time_str, True, WHITE)
+            text = font(17).render(time_str, True, FONTCOLOR)
             screen.blit(text, (50 + i * 150, HEIGHT - 70))
 
     def refresh(self, excl = False):
@@ -916,11 +940,11 @@ class Schedule:
 
         self.today_time = pg.time.get_ticks() - self.start_time + self.safe_json(today())
         font = pg.font.Font('resources/etna.ttf', 50)
-        text = font.render("Study Time Today", True, WHITE)
+        text = font.render("Study Time Today", True, FONTCOLOR)
         time_str = str(dt.timedelta(milliseconds=self.today_time))
         screen.blit(text, (xaxis_centering(text.get_width()), 175))
         font = pg.font.Font('resources/etna.ttf', 40)
-        text = font.render(time_str.split('.')[0], True, WHITE)
+        text = font.render(time_str.split('.')[0], True, FONTCOLOR)
         screen.blit(text, (xaxis_centering(text.get_width()), 250))
 
 #Sections
