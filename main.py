@@ -10,6 +10,10 @@ import pyttsx3
 import json
 import os, sys
 from collections import deque
+import datetime as dt
+
+def today(): return dt.datetime.today().strftime('%Y-%m-%d')
+def days_ago(d): return (dt.datetime.today() - dt.timedelta(days=d)).strftime('%Y-%m-%d')
 
 # Initialize pg
 pg.init()
@@ -860,12 +864,63 @@ class cat_room:
         image = pg.image.load("resources/images/cat2.png").convert_alpha()
         screen.blit(image, (200, 200))
 
+class Schedule:
+    def __init__(self):
+        self.schedule_file = "resources/schedule.json"
+        self.jsonData = self.load_schedule()
+        self.start_time = pg.time.get_ticks()
+        self.today_time = pg.time.get_ticks() - self.start_time + self.safe_json(today())
+
+    def safe_json(self, v, override = None):
+        return (self.jsonData.get(v) if self.jsonData.get(v) else (0 if override == None else override))
+
+    def save_schedule(self):
+        self.jsonData[today()] = self.safe_json(today()) + pg.time.get_ticks() - self.start_time
+        with open(self.schedule_file, 'w') as f:
+            json.dump(self.jsonData, f)
+        f.close()
+
+    def load_schedule(self):
+        with open(self.schedule_file, 'r') as f:
+            data = json.load(f)
+        f.close()
+
+        return data
+
+    def open_schedule(self):
+        global CURRENT_SRC; CURRENT_SRC = "schedule"
+        generate_topbar()
+        self.refresh(True)
+
+    def schedule_section(self):
+        for i, x in enumerate(['3 Days Ago', '2 Days Ago', 'Yesterday']):
+            text = font(20).render(x, True, WHITE)
+            screen.blit(text, (50 + i * 150, HEIGHT - 100))
+            time_str = str(dt.timedelta(milliseconds=self.safe_json(days_ago(3 - i))))
+            text = font(17).render(time_str, True, WHITE)
+            screen.blit(text, (50 + i * 150, HEIGHT - 70))
+
+    def refresh(self, excl = False):
+        if not excl: self.open_schedule()
+
+        self.schedule_section()
+
+        self.today_time = pg.time.get_ticks() - self.start_time + self.safe_json(today())
+        font = pg.font.Font('resources/etna.ttf', 50)
+        text = font.render("Study Time Today", True, WHITE)
+        time_str = str(dt.timedelta(milliseconds=self.today_time)).split('.')[0]
+        screen.blit(text, (xaxis_centering(text.get_width()), 175))
+        font = pg.font.Font('resources/etna.ttf', 40)
+        text = font.render(time_str.split('.')[0], True, WHITE)
+        screen.blit(text, (xaxis_centering(text.get_width()), 250))
+
 #Sections
 flashcardsection = FlashcardSection()
 studytimersection = StudyTimerSection()
 settings = Settings()
 journal = Journal()
 catroom = cat_room()
+schedule = Schedule()
 
 #Top bar buttons
 homebutton = Button(40, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
@@ -873,13 +928,14 @@ flashbutton = Button(xaxis_centering(150), yaxis_centering(30), 150, 30, "Flashc
 studytimerbutton = Button(160, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
 journalbutton = Button(310, 10, 150, 30, "Journal", journal.open_from_button, overrideColour=BACKGROUND)
 supportbutton = Button(460, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
+schedulebutton = Button(610, 10, 150, 30, "Schedule", schedule.open_schedule, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
 logo = pg.image.load("resources/images/Applogo.png").convert_alpha()
 logo = pg.transform.scale(logo, (int(logo.get_width() * 0.15), int(logo.get_height() * 0.15)))
 
-navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
+navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton, schedulebutton]
 
 text_input = TextInputField(100, 100, 300, 40)
 
@@ -906,6 +962,7 @@ pg.display.set_icon(programIcon)
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
+            schedule.save_schedule()
             running = False
         for button_ar in all_buttons:
             [button.handle_event(event) for button in button_ar]
@@ -925,6 +982,9 @@ while running:
     if studytimersection.timerRunning: studytimersection.update()
     if CURRENT_SRC == "support":
         catroom.play_gifs()
+    elif CURRENT_SRC == "schedule":
+        if pg.time.get_ticks() % 1000 == 0:
+            schedule.refresh()
 
     text_input.draw(screen)
     journal.JournalText.draw(screen)
