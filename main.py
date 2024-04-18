@@ -531,8 +531,8 @@ settings = Settings()
 
 #Top bar buttons
 homebutton = Button(10, 10, 100, 30, "Home", home_section, overrideColour=BACKGROUND)
-flashbutton = Button(120, 10, 100, 30, "Flashcards", flashcardsection.open_flashcard_section)
-studytimerbutton = Button(230, 10, 100, 30, "Study Timer", studytimersection.open_studytimer_section)
+flashbutton = Button(120, 10, 100, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
+studytimerbutton = Button(230, 10, 100, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
