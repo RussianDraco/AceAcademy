@@ -9,7 +9,7 @@ import speech_recognition as sr
 import pyttsx3
 import json
 import os, sys
-
+from collections import deque
 
 # Initialize pg
 pg.init()
@@ -736,22 +736,35 @@ class Journal:
                         self.selected_journal = name
                         self.open_journal_section()
         
+class cat_room:
+    def __init__(self):
+        pass
+    
+    def open_cats(self):
+        generate_topbar()
+        
+        image = pg.image.load("resources/images/cat1.png").convert_alpha()
+        screen.blit(image, (10, 10))
+        image = pg.image.load("resources/images/cat2.png").convert_alpha()
+        screen.blit(image, (200, 200))
 
 #Sections
 flashcardsection = FlashcardSection()
 studytimersection = StudyTimerSection()
 settings = Settings()
 journal = Journal()
+catroom = cat_room()
 
 #Top bar buttons
 homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
 flashbutton = Button(600, 10, 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
 studytimerbutton = Button(330, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
-journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_from_button, overrideColour=BACKGROUND)
+journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_journal_section, overrideColour=BACKGROUND)
+supportbutton = Button(800, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
-navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton]
+navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
 
 text_input = TextInputField(100, 100, 300, 40)
 
