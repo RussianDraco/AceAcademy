@@ -34,7 +34,7 @@ TEXT_LIMIT = 19
 DARK_BUTTON_COLOUR = (90, 66, 107)
 LIGHT_BUTTON_COLOUR = (142, 115, 162)
 BUTTON_TEXT_COLOR = (255, 255, 255)
-FONT = pg.font.Font('resources/etna.ttf', 25)
+FONT = pg.font.Font('resources/etna.ttf', 20)
 FONT28 = pg.font.Font(None, 25)
 
 # Accessibility
@@ -46,6 +46,8 @@ smoothening = 8
 previous_x, previous_y = 0, 0
 current_y, current_x = 0, 0
 showtheimage = True
+
+
 
 
 # Create the screen
@@ -87,9 +89,7 @@ def generate_topbar():
 def home_section():
     global CURRENT_SRC; CURRENT_SRC = "home"
     generate_topbar()
-
     flashbutton.draw()
-
     pg.draw.rect(screen, BACKGROUND, (0, 50, WIDTH, HEIGHT - 50))
 
 
@@ -544,6 +544,9 @@ class Settings:
         self.handtrackingbutton.draw()
         self.draw_toggle(xaxis_centering(50) + 70, 200, self.DOhandtracking)
 
+class Journal:
+    def innit(self):
+        pass
 
 #Sections
 flashcardsection = FlashcardSection()
@@ -551,9 +554,9 @@ studytimersection = StudyTimerSection()
 settings = Settings()
 
 #Top bar buttons
-homebutton = Button(10, 10, 100, 30, "Home", home_section, overrideColour=BACKGROUND)
-flashbutton = Button(120, 10, 100, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
-studytimerbutton = Button(230, 10, 100, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
+homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
+flashbutton = Button(600, 10, 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
+studytimerbutton = Button(330, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
