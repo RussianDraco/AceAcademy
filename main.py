@@ -110,7 +110,7 @@ class Gif:
 
         # Load frames from folder
         for filename in sorted(os.listdir(folder_path)):
-            if filename.endswith(".png") or filename.endswith(".jpg"):
+            if filename.endswith(".png") or filename.endswith(".jpg") or filename.endswith(".gif"):
                 frame_path = os.path.join(folder_path, filename)
                 frame = pg.image.load(frame_path).convert_alpha()
                 self.frames.append(frame)
@@ -188,8 +188,8 @@ class TextInputField:
     def revamp_rect(self, x, y):
         self.x = x
         self.y = y
-        self.rect = pg.Rect(x + 2, y + 2, self.width - 4, self.height - 4, 0, 5)
-        self.backrect = pg.Rect(x, y, self.width, self.height,0,5)
+        self.rect = pg.Rect(x + 2, y + 2, self.width - 4, self.height - 4)
+        self.backrect = pg.Rect(x, y, self.width, self.height)
 
     def handle_event(self, event):
         if not self.shown: return
@@ -638,7 +638,7 @@ class Journal:
         self.update()
 
     def blurt_section(self):
-        self.blurt_text_input.initTextInput(750, 200, returnFunc=None, chrlmt=1000)
+        self.blurt_text_input.initTextInput(600, 200, returnFunc=None, chrlmt=1000)
 
         self.journal_state = "blurt"
         self.update()
@@ -835,18 +835,23 @@ class Journal:
 class cat_room:
     def __init__(self):
         self.gifs = [
-            #Gif("resources/gifs/cat1", 400, 400),
+            Gif("resources/gifs/Chinese Dance", 700, 200),
+            Gif("resources/gifs/Chipi Chipi", 400, 400),
+            Gif("resources/gifs/Computer", 800, 400),
         ]
 
         #self.audio = AudioPlayer("resources/audio/meowing.mp3")
     
+    def play_gifs(self):
+        for gif in self.gifs:
+            gif.play(screen)
+
     def open_cats(self):
         global CURRENT_SRC; CURRENT_SRC = "support"
 
         generate_topbar()
         
-        for gif in self.gifs:
-            gif.play(screen)
+        self.play_gifs()
 
         #self.audio.play()
 
@@ -918,6 +923,8 @@ while running:
                 for obj in pack:
                     obj.handle_event(event)
     if studytimersection.timerRunning: studytimersection.update()
+    if CURRENT_SRC == "support":
+        catroom.play_gifs()
 
     text_input.draw(screen)
     journal.JournalText.draw(screen)
