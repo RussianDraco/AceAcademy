@@ -568,7 +568,7 @@ class Journal:
         
         self.JournalText = TextInputField(150, 100, 600, 40, False)
         self.JournalName = TextInputField(250, 200, 600, 200, False)
-        self.blurt_text_input = TextInputField(750, 200, 500, 200, False)
+        self.blurt_text_input = TextInputField(500, 200, 500, 200, False)
 
         self.new_journal_name = None
         self.new_journal_text = None
@@ -593,7 +593,7 @@ class Journal:
         self.update()
 
     def blurt_section(self):
-        self.blurt_text_input.initTextInput(250, 100, None, chrlmt=1000)
+        self.blurt_text_input.initTextInput(750, 200, returnFunc=None, chrlmt=1000)
 
         self.journal_state = "blurt"
         self.update()
@@ -967,10 +967,6 @@ while running:
                 
         cv2.imshow("Eye Cam View", frame)
         cv2.waitKey(1)
-            
-        
-        
-
 
     # Update the display
     pg.display.flip()
