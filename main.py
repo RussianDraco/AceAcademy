@@ -741,6 +741,8 @@ class cat_room:
         pass
     
     def open_cats(self):
+        global CURRENT_SRC; CURRENT_SRC = "support"
+
         generate_topbar()
         
         image = pg.image.load("resources/images/cat1.png").convert_alpha()
@@ -757,14 +759,13 @@ catroom = cat_room()
 
 #Top bar buttons
 homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
-flashbutton = Button(xaxis_centering(150), yaxis_centering(30), 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
+flashbutton = Button(xaxis_centering(150), yaxis_centering(30), 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=LIGHT_BUTTON_COLOUR)
 studytimerbutton = Button(330, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
-journalbutton = Button(600, 10, 150, 30, "Journal", journal.open_journal_section, overrideColour=BACKGROUND)
-supportbutton = Button(800, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
+journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_journal_section, overrideColour=BACKGROUND)
+supportbutton = Button(600, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
-navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
 navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
 
 text_input = TextInputField(100, 100, 300, 40)
@@ -792,6 +793,10 @@ while running:
         text_input.handle_event(event)
         journal.JournalText.handle_event(event)
         journal.JournalName.handle_event(event)
+
+        if CURRENT_SRC == "home":
+            flashbutton.draw()
+
         for (loci, pack) in extra_event_handling:
             if CURRENT_SRC == loci or loci == "any":
                 for obj in pack:
