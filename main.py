@@ -54,7 +54,7 @@ eyetracking = False
 
 # Create the screen
 screen = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("Edupanion")
+pg.display.set_caption("Ace Academia")
 
 CURRENT_SRC = "home"
 
@@ -87,6 +87,7 @@ def generate_topbar():
     screen.fill(BACKGROUND)
     pg.draw.rect(screen, BACKGROUND, (0, 48, WIDTH, 2))
     [button.draw() for button in navbarbuttons]
+    screen.blit(logo, (5,-4))
 
 def home_section():
     global CURRENT_SRC; CURRENT_SRC = "home"
@@ -834,10 +835,10 @@ class Journal:
 class cat_room:
     def __init__(self):
         self.gifs = [
-            Gif("resources/gifs/cat1", 400, 400),
+            #Gif("resources/gifs/cat1", 400, 400),
         ]
 
-        self.audio = AudioPlayer("resources/audio/meowing.mp3")
+        #self.audio = AudioPlayer("resources/audio/meowing.mp3")
     
     def open_cats(self):
         global CURRENT_SRC; CURRENT_SRC = "support"
@@ -847,7 +848,7 @@ class cat_room:
         for gif in self.gifs:
             gif.play(screen)
 
-        self.audio.play()
+        #self.audio.play()
 
         image = pg.image.load("resources/images/cat1.png").convert_alpha()
         screen.blit(image, (10, 10))
@@ -907,11 +908,10 @@ while running:
         journal.JournalText.handle_event(event)
         journal.JournalName.handle_event(event)
         journal.blurt_text_input.handle_event(event)
-        screen.blit(logo, (5,-4))
         if CURRENT_SRC == "home":
             flashbutton.draw()
-        if CURRENT_SRC != "support":
-            cat_room.audio.stop()
+        #if CURRENT_SRC != "support":
+            #cat_room.audio.stop()
 
         for (loci, pack) in extra_event_handling:
             if CURRENT_SRC == loci or loci == "any":
