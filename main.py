@@ -639,6 +639,7 @@ class Journal:
         
     def toggle_blurt_notes(self):
         self.showingBlurtNotes = not self.showingBlurtNotes
+        print(self.showingBlurtNotes)
         self.update()
 
     def blurt_section(self):
@@ -803,9 +804,13 @@ class Journal:
             if self.selected_journal == None: return
             
             self.blurt_text_input.setShown(True)
+
+            self.blurt_button.setShown(False)
+            self.blurt_button.draw()
+
             self.blurttogglebutton.setShown(True)
             self.blurttogglebutton.draw()
-            print("________________________")
+
             if self.showingBlurtNotes:
                 print("Showing notes")
                 blurtingTxt = ""
@@ -955,7 +960,7 @@ extra_event_handling = [
     ("flashcards", [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton]),
     ("studytimer", studytimersection.optionButtons),
     ("settings", settings.optionButtons),
-    ("journal", [journal, journal.addjournalbutton, journal.create_journal_button, journal.delete_journal_button, journal.save_journal_button, journal.blurt_button])
+    ("journal", [journal, journal.addjournalbutton, journal.create_journal_button, journal.delete_journal_button, journal.save_journal_button, journal.blurt_button, journal.blurttogglebutton])
 ]
 
 home_section()
