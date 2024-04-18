@@ -51,7 +51,7 @@ pTime = 0
 smoothening = 8
 previous_x, previous_y = 0, 0
 current_y, current_x = 0, 0
-showtheimage = True
+showtheimage = False
 eyetracking = False
 
 
