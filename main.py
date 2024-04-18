@@ -511,7 +511,7 @@ class StudyTimerSection:
             if len(strm) == 1: strm = "0" + strm
             if len(strs) == 1: strs = "0" + strs
 
-            text = font(150).render(strm + ":" + strs, True, BLACK) #omitted {str(h)} for now bc its unneccesary
+            text = font(150).render(strm + ":" + strs, True, WHITE) #omitted {str(h)} for now bc its unneccesary
             screen.blit(text, (xaxis_centering(text.get_width()), 100))
 
         #self.studytimer_section()
