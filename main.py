@@ -2,17 +2,10 @@ import pygame as pg
 import sys
 import os
 import json
-import math, cv2, pyautogui
-import mediapipe as mp
-import numpy as np
-import speech_recognition as sr
+import math
 
 # Initialize pg
 pg.init()
-
-#Init speech recognition
-mic = sr.Microphone()
-r = sr.Recognizer()
 
 # Constants
 WIDTH, HEIGHT = 1200, 600
@@ -29,16 +22,9 @@ FONT28 = pg.font.Font(None, 25)
 
 
 
-# Accessibility
-full_hand_tracking = True
-camera_width, camera_height = 640, 480
-
-
 # Create the screen
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Edupanion")
-
-CURRENT_SRC = "home"
 
 def xaxis_centering(width): return (WIDTH - width) // 2 
 def yaxis_centering(height): return (HEIGHT - height) // 2
@@ -71,7 +57,6 @@ def generate_topbar():
     [button.draw() for button in navbarbuttons]
 
 def home_section():
-    global CURRENT_SRC; CURRENT_SRC = "home"
     generate_topbar()
 
     pg.draw.rect(screen, BACKGROUND, (0, 50, WIDTH, HEIGHT - 50))
@@ -125,37 +110,6 @@ class TextInputField:
 
     def handle_event(self, event):
         if not self.shown: return
-
-        if settings.DOdictation:
-            with mic as source:
-                print("Say something!")
-                audio = r.listen(source)
-                print("Got it! Now to recognize it...")
-                try:
-                    dcoded = r.recognize_google(audio)
-
-                    for bw in ['backspace', 'delete', 'erase', 'remove']:
-                        if bw in dcoded.split(' '):
-                            if len(self.text) > 0:
-                                self.text = ' '.join(self.text.split(' ')[:-1])
-                                return
-
-                    for sw in ['stop', 'exit', 'done', 'enter']:
-                        if sw in dcoded.split(' '):
-                            self.returnFunc(self.text)
-                            self.returnFunc = None
-                            self.char_limit = 99
-                            self.setShown(False)
-                            return                    
-
-                    self.text += dcoded + " "
-
-                    print("You said: " + dcoded)
-                except sr.UnknownValueError:
-                    print("Google Speech Recognition could not understand the audio")
-                except sr.RequestError as e:
-                    print("Could not request results from Google Speech Recognition service; {0}".format(e))
-
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the mouse click is within the text input field
             if self.rect.collidepoint(event.pos):
@@ -187,10 +141,6 @@ class TextInputField:
         sfce.blit(text_surface, (((-text_surface.get_width() + 275) if text_surface.get_width() > 275 else 0), 0))
 
         surface.blit(sfce, (self.x + 2, self.y + 2))
-
-        if settings.DOdictation:
-            listening_text = font(20).render("Listening...", True, BLACK)
-            screen.blit(listening_text, (self.x, self.y - 20))
 
     def setShown(self, bol):
         self.shown = bol
@@ -289,7 +239,6 @@ class FlashcardSection:
         self.open_flashcard_section()
 
     def open_flashcard_section(self):
-        global CURRENT_SRC; CURRENT_SRC = "flashcards"
         self.displaying_cards = False
 
         self.flashcard_section()
@@ -446,7 +395,6 @@ class StudyTimerSection:
         self.currentState = "Studying"
 
     def open_studytimer_section(self):
-        global CURRENT_SRC; CURRENT_SRC = "studytimer"
         self.studytimer_section()
 
     def timerEnded(self):
@@ -507,7 +455,6 @@ class Settings:
         self.DOdictation = not self.DOdictation
 
     def open_settings(self):
-        global CURRENT_SRC; CURRENT_SRC = "settings"
         generate_topbar()
 
         self.update()
@@ -530,23 +477,24 @@ studytimersection = StudyTimerSection()
 settings = Settings()
 
 #Top bar buttons
-homebutton = Button(10, 10, 100, 30, "Home", home_section, overrideColour=BACKGROUND)
-flashbutton = Button(120, 10, 100, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
-studytimerbutton = Button(230, 10, 100, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
+homebutton = Button(10, 10, 100, 30, "Home", home_section, overrideColour = BACKGROUND)
+flashbutton = Button(600, 500, 100, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour = BACKGROUND)
+studytimerbutton = Button(230, 10, 100, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour = BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
-navbarbuttons = [homebutton, flashbutton, studytimerbutton, settingsbutton]
+navbarbuttons = [homebutton, studytimerbutton, settingsbutton]
 
 text_input = TextInputField(100, 100, 300, 40)
 
 all_buttons = [navbarbuttons]
 
 extra_event_handling = [
-    ("flashcards", flashcardsection.flashcarddecks), 
-    ("flashcards", [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton]),
-    ("studytimer", studytimersection.optionButtons),
-    ("settings", settings.optionButtons)
+    flashcardsection.flashcarddecks, 
+    [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton],
+    studytimersection.optionButtons,
+    settings.optionButtons,
+    ("Home",[flashbutton])
     ]
 
 home_section()
@@ -559,25 +507,13 @@ while running:
         for button_ar in all_buttons:
             [button.handle_event(event) for button in button_ar]
         text_input.handle_event(event)
-        for (loci, pack) in extra_event_handling:
-            if CURRENT_SRC == loci or loci == "any":
-                for obj in pack:
-                    obj.handle_event(event)
+        for pack in extra_event_handling:
+            for obj in pack:
+                obj.handle_event(event)
 
     if studytimersection.timerRunning: studytimersection.update()
 
     text_input.draw(screen)
-    
-    if full_hand_tracking:
-        pass
-       #while True:
-       #     caption = cv2.VideoCapture(0)
-       #     caption.set(3, camera_width)
-       #     caption.set(4, camera_height)
-       #     success, img = caption.read()
-       #     
-       #     cv2.imshow("Face_Cam", img)
-        
 
     # Update the display
     pg.display.flip()
