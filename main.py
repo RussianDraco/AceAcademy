@@ -673,6 +673,90 @@ class Journal:
         generate_topbar()
         self.update()
         
+
+class Game:
+    def __init__(self):
+        self.flashcards = []
+        self.cards = []
+        self.selected_cards = []
+        self.matched_cards = []
+        
+        self.load_flash_decks()
+        
+        self.create_cards()
+
+    def load_flash_decks(self):
+        with open('resources/flashcards.json', 'r') as json_file:
+            data = json.load(json_file)
+        json_file.close()
+        for d in data["decks"]:
+            print(d["name"])
+            self.flashcards.append([d["name"]])
+            templist = []
+            for fc in d["cards"]:
+                templist.append(fc)
+            
+            self.flashcards[-1].append(templist)
+
+    def create_cards(self):
+        for flashcard in self.flashcards:
+            card1 = Card(flashcard)
+            card2 = Card(flashcard)
+            self.cards.append(card1)
+            self.cards.append(card2)
+
+    def select_card(self, card):
+        if card not in self.matched_cards and card not in self.selected_cards:
+            self.selected_cards.append(card)
+            card.flip()
+
+            if len(self.selected_cards) == 2:
+                self.check_match()
+
+    def check_match(self):
+        card1, card2 = self.selected_cards
+        if card1.content == card2.content:
+            self.matched_cards.append(card1)
+            self.matched_cards.append(card2)
+        else:
+            card1.flip()
+            card2.flip()
+
+        self.selected_cards = []
+
+    def draw(self):
+        for card in self.cards:
+            card.draw()
+
+    def handle_event(self, event):
+        for card in self.cards:
+            card.handle_event(event)
+            
+    def update(self):
+        generate_topbar()
+        self.draw()
+        pass
+    
+    
+    
+class Card:
+    def __init__(self, content):
+        self.content = content
+        self.width = 100
+        self.height = 150
+        self.is_flipped = False
+
+    def flip(self):
+        self.is_flipped = not self.is_flipped
+
+    def draw(self):
+        # Draw the card based on its state (flipped or not)
+        pass
+
+    def handle_event(self, event):
+        # Handle mouse click event on the card
+        pass
+
 class cat_room:
     def __init__(self):
         pass
@@ -692,17 +776,19 @@ studytimersection = StudyTimerSection()
 settings = Settings()
 journal = Journal()
 catroom = cat_room()
+memorygame = Game()
 
 #Top bar buttons
 homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
-flashbutton = Button(400, 10, 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
-studytimerbutton = Button(230, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
-journalbutton = Button(600, 10, 150, 30, "Journal", journal.open_journal_section, overrideColour=BACKGROUND)
+flashbutton = Button(200, 10, 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
+studytimerbutton = Button(125, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
+journalbutton = Button(350, 10, 150, 30, "Journal", journal.open_journal_section, overrideColour=BACKGROUND)
 supportbutton = Button(800, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
+flashcard_game = Button(550, 10, 150, 30, "Memory Game", memorygame.update, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
-navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
+navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton, flashcard_game]
 
 text_input = TextInputField(100, 100, 300, 40)
 JournalText = TextInputField(150, 100, 600, 40)
