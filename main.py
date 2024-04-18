@@ -90,7 +90,7 @@ class Button:
         self.overrideColour = overrideColour
     def draw(self):
         if not self.shown: return
-        pg.draw.rect(screen, DARK_BUTTON_COLOUR, self.rect,0,5)
+        pg.draw.rect(screen, self.overrideColour, self.rect,0,5)
         text_surface = FONT.render(self.text, True, BUTTON_TEXT_COLOR)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
@@ -530,7 +530,7 @@ studytimersection = StudyTimerSection()
 settings = Settings()
 
 #Top bar buttons
-homebutton = Button(10, 10, 100, 30, "Home", home_section,BACKGROUND)
+homebutton = Button(10, 10, 100, 30, "Home", home_section, overrideColour=BACKGROUND)
 flashbutton = Button(120, 10, 100, 30, "Flashcards", flashcardsection.open_flashcard_section)
 studytimerbutton = Button(230, 10, 100, 30, "Study Timer", studytimersection.open_studytimer_section)
 
@@ -543,7 +543,7 @@ text_input = TextInputField(100, 100, 300, 40)
 all_buttons = [navbarbuttons]
 
 extra_event_handling = [
-    ("any", flashcardsection.flashcarddecks), 
+    ("flashcards", flashcardsection.flashcarddecks), 
     ("flashcards", [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton]),
     ("studytimer", studytimersection.optionButtons),
     ("settings", settings.optionButtons)
