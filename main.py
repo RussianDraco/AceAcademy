@@ -7,6 +7,7 @@ import hand_tracking_landmarks as htl
 import numpy as np
 import speech_recognition as sr
 import pyttsx3
+import json
 
 
 # Initialize pg
@@ -36,9 +37,6 @@ BUTTON_TEXT_COLOR = (255, 255, 255)
 FONT = pg.font.Font('resources/etna.ttf', 25)
 FONT28 = pg.font.Font(None, 25)
 
-
-
-
 # Accessibility
 full_hand_tracking = False
 camera_width, camera_height = 640, 480
@@ -47,7 +45,7 @@ pTime = 0
 smoothening = 8
 previous_x, previous_y = 0, 0
 current_y, current_x = 0, 0
-showtheimage = False
+showtheimage = True
 
 
 # Create the screen
