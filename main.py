@@ -1,11 +1,32 @@
 import pygame as pg
+
 import sys
 import os
 import json
 import math
 
+import sys, os, json, cv2, pyautogui, time
+import math, cv2, pyautogui
+import mediapipe as mp
+import hand_tracking_landmarks as htl
+import numpy as np
+import speech_recognition as sr
+import pyttsx3
+
+
 # Initialize pg
 pg.init()
+PYTengine = pyttsx3.init()
+
+
+#Init speech recognition
+mic = sr.Microphone()
+r = sr.Recognizer()
+
+def tts(txt):
+    PYTengine.say(txt)
+    PYTengine.runAndWait()
+
 
 # Constants
 WIDTH, HEIGHT = 1200, 600
@@ -17,9 +38,21 @@ TEXT_LIMIT = 19
 DARK_BUTTON_COLOUR = (90, 66, 107)
 LIGHT_BUTTON_COLOUR = (142, 115, 162)
 BUTTON_TEXT_COLOR = (255, 255, 255)
-FONT = pg.font.Font(None, 25)
+FONT = pg.font.Font('resources/etna.ttf', 25)
 FONT28 = pg.font.Font(None, 25)
 
+
+
+
+# Accessibility
+full_hand_tracking = True
+camera_width, camera_height = 640, 480
+Screen_Width, Screen_Height = pyautogui.size()
+pTime = 0
+smoothening = 8
+previous_x, previous_y = 0, 0
+current_y, current_x = 0, 0
+showtheimage = False
 
 
 # Create the screen
@@ -514,6 +547,59 @@ while running:
     if studytimersection.timerRunning: studytimersection.update()
 
     text_input.draw(screen)
+
+    
+    if full_hand_tracking:
+        
+        cap = cv2.VideoCapture(0)
+        detector = htl.HandDetector()
+        #while True:
+        ret, frame = cap.read()
+        detector.analyse(frame)
+        frame = detector.detection(frame)
+        frame_width, frame_height, _ = frame.shape
+        
+        LmList = detector.position(frame)
+        
+        if len(LmList) != 0:
+            
+            x1, y1 = LmList[8][1:] #pointer
+            x1, y1 = LmList[12][1:] #middle
+            
+            fingers = detector.fingers_up()
+            
+            if fingers[1] == 1 and fingers[2] == 0: #just move
+                x3 = np.interp(x1, (0, frame_width), (0, Screen_Width))
+                y3 = np.interp(y1, (0, frame_height), (0, Screen_Height))
+                
+                current_x = previous_x + (x3 - previous_x) / smoothening
+                current_y = previous_y + (y3 - previous_y) / smoothening
+                
+                pyautogui.moveTo(Screen_Width-current_x, current_y)
+                
+                previous_x, previous_y = current_x, current_y
+                
+            if fingers[1] == 1 and fingers[2] == 1: #CLICKY CLICKY
+                distance = detector.find_distance(8, 12)  #pointer and middle finger
+                if distance <= 75:
+                    pyautogui.click()
+                    cv2.circle(frame, (x1, y1), 15, (0,255,0), cv2.FILLED)
+                
+        cTime = time.time()
+        fps = 1/(cTime-pTime)
+        pTime = cTime
+        
+        frame = cv2.flip(frame, 1)
+        cv2.putText(frame, str(int(fps)), (20,50), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,0), 3)
+        
+        if showtheimage:
+            cv2.imshow('Hand Mouse Control', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'): #press q to kill 
+            cap.release()
+            cv2.destroyAllWindows()
+            break
+        
+
 
     # Update the display
     pg.display.flip()
