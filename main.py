@@ -588,7 +588,7 @@ class Journal:
         self.update()
 
     def blurt_section(self):
-        self.blurt_text_input.initTextInput(250, 100, None, chrlmt=1000)
+        self.blurt_text_input.initTextInput(750, 200, returnFunc=None, chrlmt=1000)
 
         self.journal_state = "blurt"
         self.update()
