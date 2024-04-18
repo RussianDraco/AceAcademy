@@ -758,11 +758,11 @@ journal = Journal()
 catroom = cat_room()
 
 #Top bar buttons
-homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
+homebutton = Button(20, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
 flashbutton = Button(xaxis_centering(150), yaxis_centering(30), 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=LIGHT_BUTTON_COLOUR)
-studytimerbutton = Button(330, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
-journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_from_button, overrideColour=BACKGROUND)
-supportbutton = Button(600, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
+studytimerbutton = Button(180, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
+journalbutton = Button(340, 10, 150, 30, "Journal", journal.open_from_button, overrideColour=BACKGROUND)
+supportbutton = Button(500, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
