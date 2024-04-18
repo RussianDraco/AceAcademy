@@ -765,6 +765,7 @@ supportbutton = Button(800, 10, 150, 30, "Support Room", catroom.open_cats, over
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
 navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
+navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
 
 text_input = TextInputField(100, 100, 300, 40)
 
@@ -899,6 +900,10 @@ while running:
                 
         cv2.imshow("Eye Cam View", frame)
         cv2.waitKey(1)
+            
+        
+        
+
 
     # Update the display
     pg.display.flip()
