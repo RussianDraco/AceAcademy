@@ -98,7 +98,51 @@ def home_section():
     logo2 = pg.transform.scale(logo2, (int(logo2.get_width() * 1), int(logo2.get_height() * 1)))
     screen.blit(logo2, (xaxis_centering(100)-93, 275))
             
+class Gif:
+    def __init__(self, folder_path, x, y):
+        self.frames = []
+        self.current_frame = 0
+        self.frame_delay = 100  # milliseconds
+        self.last_frame_time = 0
+        self.x = x
+        self.y = y
 
+        # Load frames from folder
+        for filename in sorted(os.listdir(folder_path)):
+            if filename.endswith(".png") or filename.endswith(".jpg"):
+                frame_path = os.path.join(folder_path, filename)
+                frame = pg.image.load(frame_path).convert_alpha()
+                self.frames.append(frame)
+
+    def play(self, screen):
+        current_time = pg.time.get_ticks()
+
+        # Check if it's time to switch to the next frame
+        if current_time - self.last_frame_time >= self.frame_delay:
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.last_frame_time = current_time
+
+        # Display the current frame
+        frame = self.frames[self.current_frame]
+        screen.blit(frame, (self.x, self.y))
+
+class AudioPlayer:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.playing = False
+
+    def play(self):
+        if not self.playing:
+            # Code to play the audio file in a loop
+            pg.mixer.music.load(self.file_path)
+            pg.mixer.music.play(-1)  # -1 indicates infinite loop
+            self.playing = True
+
+    def stop(self):
+        if self.playing:
+            # Code to stop playing the audio file
+            pg.mixer.music.stop()
+            self.playing = False
 
 class Button:
     def __init__(self, x, y, width, height, text, action=None, secondaryAction=None, overrideColour = DARK_BUTTON_COLOUR):
@@ -789,13 +833,22 @@ class Journal:
         
 class cat_room:
     def __init__(self):
-        pass
+        self.gifs = [
+            Gif("resources/gifs/cat1", 400, 400),
+        ]
+
+        self.audio = AudioPlayer("resources/audio/meowing.mp3")
     
     def open_cats(self):
         global CURRENT_SRC; CURRENT_SRC = "support"
 
         generate_topbar()
         
+        for gif in self.gifs:
+            gif.play(screen)
+
+        self.audio.play()
+
         image = pg.image.load("resources/images/cat1.png").convert_alpha()
         screen.blit(image, (10, 10))
         image = pg.image.load("resources/images/cat2.png").convert_alpha()
@@ -857,6 +910,8 @@ while running:
         screen.blit(logo, (5,-4))
         if CURRENT_SRC == "home":
             flashbutton.draw()
+        if CURRENT_SRC != "support":
+            cat_room.audio.stop()
 
         for (loci, pack) in extra_event_handling:
             if CURRENT_SRC == loci or loci == "any":
