@@ -2,7 +2,9 @@ import pygame as pg
 import sys
 import os
 import json
-import math
+import math, cv2, pyautogui
+import mediapipe as mp
+import numpy as np
 import speech_recognition as sr
 
 # Initialize pg
@@ -25,6 +27,11 @@ FONT = pg.font.Font(None, 36)
 FONT28 = pg.font.Font(None, 25)
 
 home_intro_text = "EduHub is an integrated web and mobile platform designed to enhance the learning experience for students and educators alike. It offers a variety of tools and functionalities to support different aspects of education, from studying and homework management to interactive learning and collaboration."
+
+# Accessibility
+full_hand_tracking = True
+camera_width, camera_height = 640, 480
+
 
 # Create the screen
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -561,6 +568,16 @@ while running:
     if studytimersection.timerRunning: studytimersection.update()
 
     text_input.draw(screen)
+    
+    if full_hand_tracking:
+       #while True:
+       #     caption = cv2.VideoCapture(0)
+       #     caption.set(3, camera_width)
+       #     caption.set(4, camera_height)
+       #     success, img = caption.read()
+       #     
+       #     cv2.imshow("Face_Cam", img)
+        
 
     # Update the display
     pg.display.flip()
