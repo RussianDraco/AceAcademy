@@ -37,6 +37,8 @@ camera_width, camera_height = 640, 480
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Edupanion")
 
+CURRENT_SRC = "home"
+
 def xaxis_centering(width): return (WIDTH - width) // 2 
 def yaxis_centering(height): return (HEIGHT - height) // 2
 def font(size): return pg.font.Font(None, size)
@@ -68,6 +70,7 @@ def generate_topbar():
     [button.draw() for button in navbarbuttons]
 
 def home_section():
+    global CURRENT_SRC; CURRENT_SRC = "home"
     generate_topbar()
 
     pg.draw.rect(screen, (233, 233, 237), (0, 50, WIDTH, HEIGHT - 50))
@@ -151,13 +154,11 @@ class TextInputField:
 
                     self.text += dcoded + " "
 
-                    print("You said: " + self.text)
+                    print("You said: " + dcoded)
                 except sr.UnknownValueError:
                     print("Google Speech Recognition could not understand the audio")
                 except sr.RequestError as e:
                     print("Could not request results from Google Speech Recognition service; {0}".format(e))
-                return
-
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the mouse click is within the text input field
@@ -292,6 +293,7 @@ class FlashcardSection:
         self.open_flashcard_section()
 
     def open_flashcard_section(self):
+        global CURRENT_SRC; CURRENT_SRC = "flashcards"
         self.displaying_cards = False
 
         self.flashcard_section()
@@ -450,6 +452,7 @@ class StudyTimerSection:
         self.currentState = "Studying"
 
     def open_studytimer_section(self):
+        global CURRENT_SRC; CURRENT_SRC = "studytimer"
         self.studytimer_section()
 
     def timerEnded(self):
@@ -510,6 +513,7 @@ class Settings:
         self.DOdictation = not self.DOdictation
 
     def open_settings(self):
+        global CURRENT_SRC; CURRENT_SRC = "settings"
         generate_topbar()
 
         self.update()
@@ -545,10 +549,10 @@ text_input = TextInputField(100, 100, 300, 40)
 all_buttons = [navbarbuttons]
 
 extra_event_handling = [
-    flashcardsection.flashcarddecks, 
-    [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton],
-    studytimersection.optionButtons,
-    settings.optionButtons
+    ("any", flashcardsection.flashcarddecks), 
+    ("flashcards", [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton]),
+    ("studytimer", studytimersection.optionButtons),
+    ("settings", settings.optionButtons)
     ]
 
 home_section()
@@ -561,15 +565,17 @@ while running:
         for button_ar in all_buttons:
             [button.handle_event(event) for button in button_ar]
         text_input.handle_event(event)
-        for pack in extra_event_handling:
-            for obj in pack:
-                obj.handle_event(event)
+        for (loci, pack) in extra_event_handling:
+            if CURRENT_SRC == loci or loci == "any":
+                for obj in pack:
+                    obj.handle_event(event)
 
     if studytimersection.timerRunning: studytimersection.update()
 
     text_input.draw(screen)
     
     if full_hand_tracking:
+        pass
        #while True:
        #     caption = cv2.VideoCapture(0)
        #     caption.set(3, camera_width)
