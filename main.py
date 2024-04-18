@@ -488,6 +488,7 @@ class StudyTimerSection:
         if self.currentState != "none":
             text = font(60).render(self.currentState, True, (100, 100, 100))
             screen.blit(text, (xaxis_centering(text.get_width()), 200))
+            [but.setShown(False) for but in self.optionButtons]
 
         get_timer = self.timer.update()
 
@@ -779,7 +780,7 @@ extra_event_handling = [
     ("studytimer", studytimersection.optionButtons),
     ("settings", settings.optionButtons),
     ("journal", [journal, journal.addjournalbutton, journal.create_journal_button, journal.delete_journal_button, journal.save_journal_button])
-    ]
+]
 
 home_section()
 
