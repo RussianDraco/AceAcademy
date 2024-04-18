@@ -210,6 +210,7 @@ class TextInputField:
 
     def initTextInput(self, x, y, returnFunc, chrlmt = None):
         self.text = ""
+        print(self.text)
         self.revamp_rect(x, y)
         self.setShown(True)
         self.returnFunc = returnFunc
@@ -559,21 +560,17 @@ class Journal:
         self.selected_journal_index = None
         
         self.addjournalbutton = Button(200, HEIGHT - 70, 200, 30, "Create Journal", self.create_journal_scene, overrideColour=LIGHT_BUTTON_COLOUR)
-        self.create_journal_button = Button(500, HEIGHT - 70, 200, 30, "Open Journal", self.load_journal, overrideColour=LIGHT_BUTTON_COLOUR) #THIS IS STILL TO DO
-        self.delete_journal_button = Button(800, HEIGHT - 70, 200, 30, "Delete Journal", self.delete_journal, overrideColour=LIGHT_BUTTON_COLOUR)
+        self.create_journal_button = Button(500, HEIGHT - 70, 200, 30, "Open Journal", self.create_journal, overrideColour=LIGHT_BUTTON_COLOUR) #THIS IS STILL TO DO
+        self.delete_journal_button = Button(800, HEIGHT - 70, 200, 30, "Delete Journal", self.delete_deck, overrideColour=LIGHT_BUTTON_COLOUR)
         
-        self.save_journal_button = Button(500, HEIGHT - 80, 200, 30, "Save Journal", self.save_journal, overrideColour=LIGHT_BUTTON_COLOUR)
+        self.save_journal_button = Button(500, HEIGHT - 0, 200, 30, "Save Journal", self.save_journal, overrideColour=LIGHT_BUTTON_COLOUR)
         
-    def load_journal(self):
-        print("error")
-        pass
         
     def update_journal_json(self):
         with open('resources/flashcards.json', 'w') as f:
             json.dump(self.json_data, f)
     
     def create_journal(self, name, content):
-        print("Creating journal")
         journal = {
             "name": name,
             "content": content
@@ -589,11 +586,12 @@ class Journal:
         self.new_journal_text = txt
         
     def create_journal_scene(self):
+        print("HEHEHEHEHEH")
         self.setting_journal = True        
         self.update()
         
         
-    def delete_journal(self):
+    def delete_deck(self):
         self.journals.remove(self.selected_journal)
         self.save_journals()
     
@@ -609,26 +607,21 @@ class Journal:
             with open('resources/journals.json', 'r') as f:
                 data = json.load(f)
                 self.journals = data["journals"]
-                print(self.journals)
         except FileNotFoundError:
             self.journals = []
-            
+    
     def save_journal(self):
+        print(self.new_journal_name)
+        print(self.new_journal_text)
         
         name = self.new_journal_name
         content = self.new_journal_text
-        
-        print(name)
-        print(content)
-        
         if name and content:
             self.create_journal(name, content)
             self.setting_journal = False
             self.new_journal_name = None
             self.new_journal_text = None
             self.update()
-        else:
-            print("Please fill in all fields")
     
     def update(self):
         self.load_journals()
@@ -643,6 +636,8 @@ class Journal:
                 text = font(20).render(journal["name"], True, WHITE)
                 screen.blit(text, (x, y))
                 x += 100
+                
+                
             self.addjournalbutton.setShown(True)
             self.addjournalbutton.draw()
             
@@ -664,12 +659,8 @@ class Journal:
             
             self.save_journal_button.setShown(True)
             self.save_journal_button.draw()
-            
-    def open_journal_section(self):
-        global CURRENT_SRC
-        CURRENT_SRC = "journal"
-        generate_topbar()
-        self.update()
+        
+    
         
 
 #Sections
@@ -682,7 +673,7 @@ journal = Journal()
 homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
 flashbutton = Button(600, 10, 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
 studytimerbutton = Button(330, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
-journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_journal_section, overrideColour=BACKGROUND)
+journalbutton = Button(770, 10, 150, 30, "Journal", journal.update, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
