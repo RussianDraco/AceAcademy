@@ -11,15 +11,16 @@ pg.init()
 WIDTH, HEIGHT = 1200, 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-
+BACKGROUND = (23, 4, 25)
 TEXT_LIMIT = 19
 
-BUTTON_COLOR = (0, 0, 0)
+DARK_BUTTON_COLOUR = (90, 66, 107)
+LIGHT_BUTTON_COLOUR = (142, 115, 162)
 BUTTON_TEXT_COLOR = (255, 255, 255)
-FONT = pg.font.Font(None, 36)
+FONT = pg.font.Font(None, 25)
 FONT28 = pg.font.Font(None, 25)
 
-home_intro_text = "EduHub is an integrated web and mobile platform designed to enhance the learning experience for students and educators alike. It offers a variety of tools and functionalities to support different aspects of education, from studying and homework management to interactive learning and collaboration."
+
 
 # Create the screen
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -35,7 +36,7 @@ def wrap_text(text, limit):
         words = text.split()
         lines = []
         current_line = words[0]
-        
+
         for word in words[1:]:
             if len(current_line) + 1 + len(word) <= limit:
                 # Add the word to the current line
@@ -44,42 +45,37 @@ def wrap_text(text, limit):
                 # Start a new line
                 lines.append(current_line)
                 current_line = word
-        
+
         # Add the last line
         lines.append(current_line)
 
         return lines
 
 def generate_topbar():
-    screen.fill((240, 240, 240))
-    pg.draw.rect(screen, (200, 200, 200), (0, 48, WIDTH, 2))
+    screen.fill(BACKGROUND)
+    pg.draw.rect(screen, BACKGROUND, (0, 48, WIDTH, 2))
     [button.draw() for button in navbarbuttons]
 
 def home_section():
     generate_topbar()
 
-    pg.draw.rect(screen, (233, 233, 237), (0, 50, WIDTH, HEIGHT - 50))
-    text = font(75).render("Welcome to the Eduhub", True, BLACK)
-    screen.blit(text, (xaxis_centering(text.get_width()), 75))
-    
-    text = font(35).render("Your All-in-One Educational Companion", True, BLACK)
-    screen.blit(text, (xaxis_centering(text.get_width()), 150))
+    pg.draw.rect(screen, BACKGROUND, (0, 50, WIDTH, HEIGHT - 50))
 
-    for x, txt in enumerate(wrap_text(home_intro_text, 60)):
-        text = font(25).render(txt, True, BLACK)
-        screen.blit(text, (xaxis_centering(text.get_width()), 225 + 22 * x))
+
+
+
 
 class Button:
-    def __init__(self, x, y, width, height, text, action=None, secondaryAction=None):
+    def __init__(self, x, y, width, height, text, action=None, secondaryAction=None, overrideColour = DARK_BUTTON_COLOUR):
         self.rect = pg.Rect(x, y, width, height)
         self.text = text
         self.action = action
         self.secondaryAction = secondaryAction
         self.shown = True
-
+        self.overrideColour = overrideColour
     def draw(self):
         if not self.shown: return
-        pg.draw.rect(screen, BUTTON_COLOR, self.rect)
+        pg.draw.rect(screen, DARK_BUTTON_COLOUR, self.rect,0,5)
         text_surface = FONT.render(self.text, True, BUTTON_TEXT_COLOR)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
@@ -178,7 +174,7 @@ class Timer:
                 if self.return_action != None: self.return_action()
             else:
                 return self.start_time + self.time_length - time_now
-            
+
 class Flashcard:
     def __init__(self, contents):
         self.text = contents
@@ -324,9 +320,7 @@ class FlashcardSection:
 
             return
 
-        pg.draw.rect(screen, (207, 212, 222), (0, 50, WIDTH, HEIGHT))
-        pg.draw.rect(screen, (100, 100, 100), (WIDTH//2, 125, 5, HEIGHT - 125))
-        pg.draw.rect(screen, (100, 100, 100), (WIDTH//2 - 7, 125, 20, 5))
+
 
         text = font(50).render("Flashcards", True, BLACK)
         screen.blit(text, (xaxis_centering(text.get_width()), 75))
@@ -483,9 +477,9 @@ studytimersection = StudyTimerSection()
 settings = Settings()
 
 #Top bar buttons
-homebutton = Button(75, 10, 200, 30, "Home", home_section)
-flashbutton = Button(300, 10, 200, 30, "Flashcards", flashcardsection.open_flashcard_section)
-studytimerbutton = Button(525, 10, 200, 30, "Study Timer", studytimersection.open_studytimer_section)
+homebutton = Button(10, 10, 100, 30, "Home", home_section,BACKGROUND)
+flashbutton = Button(120, 10, 100, 30, "Flashcards", flashcardsection.open_flashcard_section)
+studytimerbutton = Button(230, 10, 100, 30, "Study Timer", studytimersection.open_studytimer_section)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
