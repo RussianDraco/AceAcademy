@@ -183,7 +183,7 @@ class TextInputField:
             if event.key == pg.K_BACKSPACE:
                 self.text = self.text[:-1]
             elif event.key == pg.K_RETURN:
-                self.returnFunc(self.text)
+                if self.returnFunc != None: self.returnFunc(self.text)
                 self.returnFunc = None
                 self.char_limit = 99
                 self.setShown(False)
@@ -220,7 +220,7 @@ class TextInputField:
     def setShown(self, bol):
         self.shown = bol
 
-    def initTextInput(self, x, y, returnFunc, chrlmt = None):
+    def initTextInput(self, x, y, returnFunc = None, chrlmt = None):
         self.text = ""
         self.revamp_rect(x, y)
         self.setShown(True)
@@ -562,6 +562,7 @@ class Journal:
         
         self.JournalText = TextInputField(150, 100, 600, 40, False)
         self.JournalName = TextInputField(250, 200, 600, 200, False)
+        self.blurt_text_input = TextInputField(750, 200, 500, 200, False)
 
         self.new_journal_name = None
         self.new_journal_text = None
@@ -571,12 +572,26 @@ class Journal:
         self.selectedJournal = None
         self.current_displayed_names = []
 
-        self.addjournalbutton = Button(200, HEIGHT - 70, 200, 30, "Create Journal", self.create_journal_scene, overrideColour=LIGHT_BUTTON_COLOUR)
-        self.create_journal_button = Button(500, HEIGHT - 70, 200, 30, "Open Journal", self.load_journal, overrideColour=LIGHT_BUTTON_COLOUR) #THIS IS STILL TO DO
-        self.delete_journal_button = Button(800, HEIGHT - 70, 200, 30, "Delete Journal", self.delete_journal, overrideColour=LIGHT_BUTTON_COLOUR)
-        
+        self.showingBlurtNotes = False
+
+        self.addjournalbutton = Button(100, HEIGHT - 70, 200, 30, "Create Journal", self.create_journal_scene, overrideColour=LIGHT_BUTTON_COLOUR)
+        self.create_journal_button = Button(350, HEIGHT - 70, 200, 30, "Open Journal", self.load_journal, overrideColour=LIGHT_BUTTON_COLOUR) #THIS IS STILL TO DO
+        self.delete_journal_button = Button(600, HEIGHT - 70, 200, 30, "Delete Journal", self.delete_journal, overrideColour=LIGHT_BUTTON_COLOUR)
+        self.blurt_button = Button(850, HEIGHT - 70, 200, 30, "Blurt", self.blurt_section, overrideColour=LIGHT_BUTTON_COLOUR)
+        self.blurttogglebutton = Button(xaxis_centering(200), HEIGHT - 80, 200, 30, "Toggle Notes", self.toggle_blurt_notes, overrideColour=LIGHT_BUTTON_COLOUR)
+
         self.save_journal_button = Button(500, HEIGHT - 80, 200, 30, "Save Journal", self.save_journal, overrideColour=LIGHT_BUTTON_COLOUR)
         
+    def toggle_blurt_notes(self):
+        self.showingBlurtNotes = not self.showingBlurtNotes
+        self.update()
+
+    def blurt_section(self):
+        self.blurt_text_input.initTextInput(250, 100, None, chrlmt=1000)
+
+        self.journal_state = "blurt"
+        self.update()
+
     def load_journal(self):
         if self.selected_journal == None: return
         for journal in self.journals:
@@ -663,6 +678,7 @@ class Journal:
         if not self.journal_state == "create":
             self.JournalText.setShown(False)
             self.JournalName.setShown(False)
+            self.blurt_text_input.setShown(False)
 
         if self.journal_state == "none":
             self.current_displayed_names = []
@@ -682,9 +698,17 @@ class Journal:
             self.delete_journal_button.setShown(True)
             self.delete_journal_button.draw()
 
+            self.blurt_button.setShown(True)
+            self.blurt_button.draw()
+
+            self.blurttogglebutton.setShown(False)
+            self.blurttogglebutton.draw()
+
             self.save_journal_button.setShown(False)
             self.save_journal_button.draw()
         
+            self.blurt_text_input.setShown(False)
+
         elif self.journal_state == "create":
             self.JournalText.initTextInput(250, 100, self.set_new_journal_name, chrlmt=100)
             text = font(30).render("Title", True, WHITE)
@@ -719,6 +743,26 @@ class Journal:
 
             #text = font(30).render(self.display_target["content"], True, WHITE)
             #screen.blit(text, (150, 200))
+
+        elif self.journal_state == "blurt":
+            if self.selected_journal == None: return
+
+            self.blurt_text_input.setShown(True)
+            self.blurttogglebutton.setShown(True)
+            self.blurttogglebutton.draw()
+            
+            if self.showingBlurtNotes:
+                blurtingTxt = ""
+                for journal in self.journals:
+                    if journal["name"] == self.selected_journal:
+                        blurtingTxt = journal["content"]
+                        break
+
+                for x, txt in enumerate(wrap_text(blurtingTxt, 47)):
+                    text = font(30).render(txt, True, WHITE)
+                    screen.blit(text, (50, 200 + x * 30))
+
+            self.blurt_text_input.draw(screen)
             
     def open_from_button(self):
         self.open_journal_section(True)
@@ -779,7 +823,7 @@ extra_event_handling = [
     ("flashcards", [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton]),
     ("studytimer", studytimersection.optionButtons),
     ("settings", settings.optionButtons),
-    ("journal", [journal, journal.addjournalbutton, journal.create_journal_button, journal.delete_journal_button, journal.save_journal_button])
+    ("journal", [journal, journal.addjournalbutton, journal.create_journal_button, journal.delete_journal_button, journal.save_journal_button, journal.blurt_button])
 ]
 
 home_section()
@@ -794,6 +838,7 @@ while running:
         text_input.handle_event(event)
         journal.JournalText.handle_event(event)
         journal.JournalName.handle_event(event)
+        journal.blurt_text_input.handle_event(event)
 
         if CURRENT_SRC == "home":
             flashbutton.draw()
@@ -807,6 +852,7 @@ while running:
     text_input.draw(screen)
     journal.JournalText.draw(screen)
     journal.JournalName.draw(screen)
+    journal.blurt_text_input.draw(screen)
 
     
     if full_hand_tracking:
