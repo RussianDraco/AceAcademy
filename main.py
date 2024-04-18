@@ -1,7 +1,4 @@
 import pygame as pg
-import sys
-import os
-import json
 import math
 import time
 import cv2, pyautogui
@@ -511,8 +508,10 @@ class Settings:
         self.DOnoMouse = False
         self.dictationbutton = Button(xaxis_centering(200) - 70, 150, 200, 30, "Dictation", self.dictation, self.open_settings)
         self.DOdictation = False
+        self.handtrackingbutton = Button(xaxis_centering(200) - 70, 200, 200, 30, "Hand Tracking", self.handtracking, self.open_settings)
+        self.DOhandtracking = False
 
-        self.optionButtons = [self.nomousebutton, self.dictationbutton]
+        self.optionButtons = [self.nomousebutton, self.dictationbutton, self.handtrackingbutton]
 
     def draw_toggle(self, x, y, istoggle):
         pg.draw.rect(screen, (169, 169, 169), (x, y, 40, 40))
@@ -523,6 +522,8 @@ class Settings:
         self.DOnoMouse = not self.DOnoMouse
     def dictation(self):
         self.DOdictation = not self.DOdictation
+    def handtracking(self):
+        self.DOhandtracking = not self.DOhandtracking; global full_hand_tracking; full_hand_tracking = self.DOhandtracking
 
     def open_settings(self):
         global CURRENT_SRC; CURRENT_SRC = "settings"
@@ -540,6 +541,10 @@ class Settings:
         self.dictationbutton.setShown(True)
         self.dictationbutton.draw()
         self.draw_toggle(xaxis_centering(50) + 70, 150, self.DOdictation)
+
+        self.handtrackingbutton.setShown(True)
+        self.handtrackingbutton.draw()
+        self.draw_toggle(xaxis_centering(50) + 70, 200, self.DOhandtracking)
 
 
 #Sections
