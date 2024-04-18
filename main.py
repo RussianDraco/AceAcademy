@@ -573,7 +573,6 @@ while running:
     text_input.draw(screen)
     
     if full_hand_tracking:
-<<<<<<< HEAD
         
         cap = cv2.VideoCapture(0)
         detector = htl.HandDetector()
@@ -622,16 +621,6 @@ while running:
             cap.release()
             cv2.destroyAllWindows()
             break
-=======
-        pass
-       #while True:
-       #     caption = cv2.VideoCapture(0)
-       #     caption.set(3, camera_width)
-       #     caption.set(4, camera_height)
-       #     success, img = caption.read()
-       #     
-       #     cv2.imshow("Face_Cam", img)
->>>>>>> 924f206d37a6c7bda24d4d9a102f15e6c3772411
         
 
     # Update the display
