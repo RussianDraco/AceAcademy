@@ -840,9 +840,13 @@ class Journal:
 class cat_room:
     def __init__(self):
         self.gifs = [
-            Gif("resources/gifs/Chinese Dance", 700, 200),
+            Gif("resources/gifs/Chinese Dance", 430, 90),
             Gif("resources/gifs/Chipi Chipi", 400, 400),
             Gif("resources/gifs/Computer", 800, 400),
+            Gif("resources/gifs/Huh", 200, 100),
+            Gif("resources/gifs/Mewing", 600, 50),
+            Gif("resources/gifs/Shocked", 75, 320),
+            
         ]
 
         #self.audio = AudioPlayer("resources/audio/meowing.mp3")
