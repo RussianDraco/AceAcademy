@@ -3,8 +3,8 @@ import sys
 import os
 import json
 import math
-import sys, os, json, cv2, pyautogui, time
-import math, cv2, pyautogui
+import time
+import cv2, pyautogui
 import mediapipe as mp
 import hand_tracking_landmarks as htl
 import numpy as np
