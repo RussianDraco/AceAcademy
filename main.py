@@ -6,13 +6,19 @@ import math, cv2, pyautogui
 import mediapipe as mp
 import numpy as np
 import speech_recognition as sr
+import pyttsx3
 
 # Initialize pg
 pg.init()
+PYTengine = pyttsx3.init()
 
 #Init speech recognition
 mic = sr.Microphone()
 r = sr.Recognizer()
+
+def tts(txt):
+    PYTengine.say(txt)
+    PYTengine.runAndWait()
 
 # Constants
 WIDTH, HEIGHT = 1200, 600
@@ -24,7 +30,7 @@ TEXT_LIMIT = 19
 DARK_BUTTON_COLOUR = (90, 66, 107)
 LIGHT_BUTTON_COLOUR = (142, 115, 162)
 BUTTON_TEXT_COLOR = (255, 255, 255)
-FONT = pg.font.Font(None, 25)
+FONT = pg.font.Font('resources/etna.ttf', 25)
 FONT28 = pg.font.Font(None, 25)
 
 
