@@ -900,7 +900,7 @@ class Schedule:
         for i, x in enumerate(['3 Days Ago', '2 Days Ago', 'Yesterday']):
             text = font(20).render(x, True, WHITE)
             screen.blit(text, (50 + i * 150, HEIGHT - 100))
-            time_str = str(dt.timedelta(milliseconds=self.safe_json(days_ago(3 - i))))
+            time_str = str(dt.timedelta(milliseconds=self.safe_json(days_ago(3 - i)))).split('.')[0]
             text = font(17).render(time_str, True, WHITE)
             screen.blit(text, (50 + i * 150, HEIGHT - 70))
 
@@ -912,7 +912,7 @@ class Schedule:
         self.today_time = pg.time.get_ticks() - self.start_time + self.safe_json(today())
         font = pg.font.Font('resources/etna.ttf', 50)
         text = font.render("Study Time Today", True, WHITE)
-        time_str = str(dt.timedelta(milliseconds=self.today_time)).split('.')[0]
+        time_str = str(dt.timedelta(milliseconds=self.today_time))
         screen.blit(text, (xaxis_centering(text.get_width()), 175))
         font = pg.font.Font('resources/etna.ttf', 40)
         text = font.render(time_str.split('.')[0], True, WHITE)
