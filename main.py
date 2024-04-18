@@ -3,9 +3,14 @@ import sys
 import os
 import json
 import math
+import speech_recognition as sr
 
 # Initialize pg
 pg.init()
+
+#Init speech recognition
+mic = sr.Microphone()
+r = sr.Recognizer()
 
 # Constants
 WIDTH, HEIGHT = 1200, 600
@@ -114,6 +119,39 @@ class TextInputField:
 
     def handle_event(self, event):
         if not self.shown: return
+
+        if settings.DOdictation:
+            with mic as source:
+                print("Say something!")
+                audio = r.listen(source)
+                print("Got it! Now to recognize it...")
+                try:
+                    dcoded = r.recognize_google(audio)
+
+                    for bw in ['backspace', 'delete', 'erase', 'remove']:
+                        if bw in dcoded.split(' '):
+                            if len(self.text) > 0:
+                                self.text = ' '.join(self.text.split(' ')[:-1])
+                                return
+
+                    for sw in ['stop', 'exit', 'done', 'enter']:
+                        if sw in dcoded.split(' '):
+                            self.returnFunc(self.text)
+                            self.returnFunc = None
+                            self.char_limit = 99
+                            self.setShown(False)
+                            return                    
+
+                    self.text += dcoded + " "
+
+                    print("You said: " + self.text)
+                except sr.UnknownValueError:
+                    print("Google Speech Recognition could not understand the audio")
+                except sr.RequestError as e:
+                    print("Could not request results from Google Speech Recognition service; {0}".format(e))
+                return
+
+
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the mouse click is within the text input field
             if self.rect.collidepoint(event.pos):
@@ -145,6 +183,10 @@ class TextInputField:
         sfce.blit(text_surface, (((-text_surface.get_width() + 275) if text_surface.get_width() > 275 else 0), 0))
 
         surface.blit(sfce, (self.x + 2, self.y + 2))
+
+        if settings.DOdictation:
+            listening_text = font(20).render("Listening...", True, BLACK)
+            screen.blit(listening_text, (self.x, self.y - 20))
 
     def setShown(self, bol):
         self.shown = bol
