@@ -797,12 +797,13 @@ class Journal:
 
         elif self.journal_state == "blurt":
             if self.selected_journal == None: return
-
+            
             self.blurt_text_input.setShown(True)
             self.blurttogglebutton.setShown(True)
             self.blurttogglebutton.draw()
-            
+            print("________________________")
             if self.showingBlurtNotes:
+                print("Showing notes")
                 blurtingTxt = ""
                 for journal in self.journals:
                     if journal["name"] == self.selected_journal:
@@ -856,9 +857,12 @@ class cat_room:
         #self.audio.play()
 
         image = pg.image.load("resources/images/cat1.png").convert_alpha()
-        screen.blit(image, (10, 10))
-        image = pg.image.load("resources/images/cat2.png").convert_alpha()
-        screen.blit(image, (200, 200))
+        image = pg.transform.scale(image, (int(image.get_width() * 0.5), int(image.get_height() * 0.5)))
+        screen.blit(image, (10, 40))
+        
+        image2 = pg.image.load("resources/images/cat2.png").convert_alpha()
+        image2 = pg.transform.scale(image2, (int(image2.get_width() * 0.5), int(image2.get_height() * 0.5)))
+        screen.blit(image2, (1000, 400))
 
 #Sections
 flashcardsection = FlashcardSection()
