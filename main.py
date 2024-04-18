@@ -93,6 +93,11 @@ def home_section():
     generate_topbar()
     flashbutton.draw()
     pg.draw.rect(screen, BACKGROUND, (0, 50, WIDTH, HEIGHT - 50))
+    
+    logo2 = pg.image.load("resources/images/Ace_Academia-removebg-preview.png").convert_alpha()
+    logo2 = pg.transform.scale(logo2, (int(logo2.get_width() * 1), int(logo2.get_height() * 1)))
+    screen.blit(logo2, (xaxis_centering(100)-93, 275))
+            
 
 
 class Button:
@@ -758,13 +763,16 @@ journal = Journal()
 catroom = cat_room()
 
 #Top bar buttons
-homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
+homebutton = Button(40, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
 flashbutton = Button(xaxis_centering(150), yaxis_centering(30), 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=LIGHT_BUTTON_COLOUR)
 studytimerbutton = Button(330, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
 journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_from_button, overrideColour=BACKGROUND)
 supportbutton = Button(600, 10, 150, 30, "Support Room", catroom.open_cats, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
+
+logo = pg.image.load("resources/images/Applogo.png").convert_alpha()
+logo = pg.transform.scale(logo, (int(logo.get_width() * 0.15), int(logo.get_height() * 0.15)))
 
 navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton, supportbutton]
 
@@ -784,6 +792,12 @@ extra_event_handling = [
 home_section()
 
 running = True
+
+
+
+programIcon = pg.image.load('resources/images/Applogo.png')
+pg.display.set_icon(programIcon)
+
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -793,6 +807,7 @@ while running:
         text_input.handle_event(event)
         journal.JournalText.handle_event(event)
         journal.JournalName.handle_event(event)
+        screen.blit(logo, (5,-4))
 
         if CURRENT_SRC == "home":
             flashbutton.draw()
