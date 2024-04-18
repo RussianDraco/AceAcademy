@@ -123,7 +123,7 @@ class Button:
         self.shown = bol
 
 class TextInputField:
-    def __init__(self, x, y, width, height, shiftWrap = True):
+    def __init__(self, x, y, width, height, shiftWrap = True, overrideColour = WHITE):
         self.x = x; self.y = y; self.width = width; self.height = height
         self.rect = pg.Rect(x + 2, y + 2, width - 4, height - 4)
         self.backrect = pg.Rect(x, y, width, height)
@@ -133,12 +133,13 @@ class TextInputField:
         self.returnFunc = None
         self.char_limit = 99
         self.shiftWrap = shiftWrap
+        self.overrideColour = overrideColour
 
     def revamp_rect(self, x, y):
         self.x = x
         self.y = y
-        self.rect = pg.Rect(x + 2, y + 2, self.width - 4, self.height - 4)
-        self.backrect = pg.Rect(x, y, self.width, self.height)
+        self.rect = pg.Rect(x + 2, y + 2, self.width - 4, self.height - 4, 0, 5)
+        self.backrect = pg.Rect(x, y, self.width, self.height,0,5)
 
     def handle_event(self, event):
         if not self.shown: return
