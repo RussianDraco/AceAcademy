@@ -8,6 +8,7 @@ import numpy as np
 import speech_recognition as sr
 import pyttsx3
 import json
+import os, sys
 
 
 # Initialize pg
@@ -28,6 +29,7 @@ def tts(txt):
 WIDTH, HEIGHT = 1200, 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 BACKGROUND = (23, 4, 25)
 TEXT_LIMIT = 19
 
@@ -109,6 +111,7 @@ class Button:
         screen.blit(text_surface, text_rect)
 
     def handle_event(self, event):
+        if not self.shown: return
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 if self.action:
@@ -120,7 +123,7 @@ class Button:
         self.shown = bol
 
 class TextInputField:
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, shiftWrap = True):
         self.x = x; self.y = y; self.width = width; self.height = height
         self.rect = pg.Rect(x + 2, y + 2, width - 4, height - 4)
         self.backrect = pg.Rect(x, y, width, height)
@@ -129,6 +132,7 @@ class TextInputField:
         self.shown = False
         self.returnFunc = None
         self.char_limit = 99
+        self.shiftWrap = shiftWrap
 
     def revamp_rect(self, x, y):
         self.x = x
@@ -194,10 +198,18 @@ class TextInputField:
 
         text_surface = FONT.render(self.text, True, BLACK)
 
-        sfce = pg.Surface((296, 36))
+        sfce = pg.Surface((self.width, self.height))
         sfce.fill(WHITE)
 
-        sfce.blit(text_surface, (((-text_surface.get_width() + 275) if text_surface.get_width() > 275 else 0), 0))
+        y = 0
+        if self.shiftWrap:
+            sfce.blit(text_surface, (((-text_surface.get_width() + 275) if text_surface.get_width() > 275 else 0), 0))
+        else:
+            for x in wrap_text(self.text, self.width // 10):
+                text_surface = FONT.render(x, True, BLACK)
+                sfce.blit(text_surface, (0, y))
+                y += 30
+                #sfce = pg.transform.scale(sfce, (296, 36 + 20 * len(wrap_text(self.text, TEXT_LIMIT)) - 1))
 
         surface.blit(sfce, (self.x + 2, self.y + 2))
 
@@ -358,7 +370,6 @@ class FlashcardSection:
         generate_topbar()
 
         if self.displaying_cards:
-
             self.adddeckbutton.setShown(False)
 
             self.create_card_button.setShown(True)
@@ -383,8 +394,6 @@ class FlashcardSection:
                 screen.blit(text, (xaxis_centering(text.get_width()), yaxis_centering(text.get_height())))
 
             return
-
-
 
         text = font(50).render("Flashcards", True, BLACK)
         screen.blit(text, (xaxis_centering(text.get_width()), 75))
@@ -548,16 +557,19 @@ class Journal:
     def __init__(self):
         self.journals = []
         self.json_data = None
-        self.setting_journal = False
+        self.journal_state = "none"
         
-        
+        self.JournalText = TextInputField(150, 100, 600, 40, False)
+        self.JournalName = TextInputField(250, 200, 600, 200, False)
+
         self.new_journal_name = None
         self.new_journal_text = None
         
         self.selected_journal = None
         self.display_target = None
-        self.selected_journal_index = None
-        
+        self.selectedJournal = None
+        self.current_displayed_names = []
+
         self.addjournalbutton = Button(200, HEIGHT - 70, 200, 30, "Create Journal", self.create_journal_scene, overrideColour=LIGHT_BUTTON_COLOUR)
         self.create_journal_button = Button(500, HEIGHT - 70, 200, 30, "Open Journal", self.load_journal, overrideColour=LIGHT_BUTTON_COLOUR) #THIS IS STILL TO DO
         self.delete_journal_button = Button(800, HEIGHT - 70, 200, 30, "Delete Journal", self.delete_journal, overrideColour=LIGHT_BUTTON_COLOUR)
@@ -565,8 +577,12 @@ class Journal:
         self.save_journal_button = Button(500, HEIGHT - 80, 200, 30, "Save Journal", self.save_journal, overrideColour=LIGHT_BUTTON_COLOUR)
         
     def load_journal(self):
-        print("error")
-        pass
+        if self.selected_journal == None: return
+        for journal in self.journals:
+            if journal["name"] == self.selected_journal:
+                self.journal_state = "display"
+                self.display_target = journal
+                self.update()
         
     def update_journal_json(self):
         with open('resources/flashcards.json', 'w') as f:
@@ -589,13 +605,18 @@ class Journal:
         self.new_journal_text = txt
         
     def create_journal_scene(self):
-        self.setting_journal = True        
+        self.journal_state = "create"   
         self.update()
         
         
     def delete_journal(self):
-        self.journals.remove(self.selected_journal)
+        for x, journal in enumerate(self.journals):
+            if journal["name"] == self.selected_journal:
+                self.journals.pop(x)
+                break
+
         self.save_journals()
+        self.open_journal_section()
     
     def save_journals(self):
         data = {
@@ -609,12 +630,10 @@ class Journal:
             with open('resources/journals.json', 'r') as f:
                 data = json.load(f)
                 self.journals = data["journals"]
-                print(self.journals)
         except FileNotFoundError:
             self.journals = []
             
     def save_journal(self):
-        
         name = self.new_journal_name
         content = self.new_journal_text
         
@@ -623,25 +642,35 @@ class Journal:
         
         if name and content:
             self.create_journal(name, content)
-            self.setting_journal = False
+            self.journal_state = "none"
             self.new_journal_name = None
             self.new_journal_text = None
             self.update()
         else:
             print("Please fill in all fields")
     
-    def update(self):
+    def update(self, from_original_button = False):
         self.load_journals()
         generate_topbar()
         # Display the journals
         
-        if self.setting_journal == False:
+        if from_original_button:
+            self.journal_state = "none"
+            self.selected_journal = None
+            self.display_target = None
+
+        if not self.journal_state == "create":
+            self.JournalText.setShown(False)
+            self.JournalName.setShown(False)
+
+        if self.journal_state == "none":
+            self.current_displayed_names = []
             x = 100
             y = 150
             for i, journal in enumerate(self.journals):
-            
-                text = font(20).render(journal["name"], True, WHITE)
+                text = font(20).render(journal["name"], True, RED if self.selected_journal == journal["name"] else WHITE)
                 screen.blit(text, (x, y))
+                self.current_displayed_names.append((pg.rect.Rect(x, y, text.get_width(), text.get_height()), journal['name']))
                 x += 100
             self.addjournalbutton.setShown(True)
             self.addjournalbutton.draw()
@@ -651,25 +680,61 @@ class Journal:
             
             self.delete_journal_button.setShown(True)
             self.delete_journal_button.draw()
-        
-        elif self.setting_journal == True:
 
-            JournalText.initTextInput(250, 100, self.set_new_journal_name, chrlmt=100)
+            self.save_journal_button.setShown(False)
+            self.save_journal_button.draw()
+        
+        elif self.journal_state == "create":
+            self.JournalText.initTextInput(250, 100, self.set_new_journal_name, chrlmt=100)
             text = font(30).render("Title", True, WHITE)
             screen.blit(text, (150, 100))
             
-            JournalName.initTextInput(250, 200, self.set_new_journal_text, chrlmt=1000)
+            self.JournalName.initTextInput(250, 200, self.set_new_journal_text, chrlmt=1000)
             text = font(30).render("Text", True, WHITE)
             screen.blit(text, (150, 200))
             
             self.save_journal_button.setShown(True)
             self.save_journal_button.draw()
+
+        elif self.journal_state == "display":
+            self.addjournalbutton.setShown(False)
+            self.addjournalbutton.draw()
             
-    def open_journal_section(self):
+            self.create_journal_button.setShown(False)
+            self.create_journal_button.draw()
+            
+            self.delete_journal_button.setShown(False)
+            self.delete_journal_button.draw()
+
+            self.save_journal_button.setShown(False)
+            self.save_journal_button.draw()
+
+            text = font(30).render(self.display_target["name"], True, WHITE)
+            screen.blit(text, (150, 100))
+            
+            for x, txt in enumerate(wrap_text(self.display_target["content"], 47)):
+                text = font(30).render(txt, True, WHITE)
+                screen.blit(text, (150, 200 + x * 30))
+
+            #text = font(30).render(self.display_target["content"], True, WHITE)
+            #screen.blit(text, (150, 200))
+            
+    def open_from_button(self):
+        self.open_journal_section(True)
+
+    def open_journal_section(self, from_original_button = False):
         global CURRENT_SRC
         CURRENT_SRC = "journal"
         generate_topbar()
-        self.update()
+        self.update(from_original_button)
+
+    def handle_event(self, event):
+        if self.journal_state == "none":
+            for rect, name in self.current_displayed_names:
+                if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                    if rect.collidepoint(event.pos):
+                        self.selected_journal = name
+                        self.open_journal_section()
         
 
 #Sections
@@ -682,15 +747,13 @@ journal = Journal()
 homebutton = Button(10, 10, 150, 30, "Home", home_section, overrideColour=BACKGROUND)
 flashbutton = Button(600, 10, 150, 30, "Flashcards", flashcardsection.open_flashcard_section, overrideColour=BACKGROUND)
 studytimerbutton = Button(330, 10, 150, 30, "Study Timer", studytimersection.open_studytimer_section, overrideColour=BACKGROUND)
-journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_journal_section, overrideColour=BACKGROUND)
+journalbutton = Button(770, 10, 150, 30, "Journal", journal.open_from_button, overrideColour=BACKGROUND)
 
 settingsbutton = Button(1040, 10, 150, 30, "Settings", settings.open_settings)
 
 navbarbuttons = [homebutton, studytimerbutton, journalbutton, settingsbutton]
 
 text_input = TextInputField(100, 100, 300, 40)
-JournalText = TextInputField(150, 100, 600, 40)
-JournalName = TextInputField(250, 200, 600, 200)
 
 all_buttons = [navbarbuttons]
 
@@ -700,7 +763,7 @@ extra_event_handling = [
     ("flashcards", [flashcardsection.left_button, flashcardsection.right_button, flashcardsection.create_card_button, flashcardsection.delete_card_button, flashcardsection.delete_deck_button, flashcardsection.adddeckbutton]),
     ("studytimer", studytimersection.optionButtons),
     ("settings", settings.optionButtons),
-    ("journal", [journal.addjournalbutton, journal.create_journal_button, journal.delete_journal_button, journal.save_journal_button])
+    ("journal", [journal, journal.addjournalbutton, journal.create_journal_button, journal.delete_journal_button, journal.save_journal_button])
     ]
 
 home_section()
@@ -713,8 +776,8 @@ while running:
         for button_ar in all_buttons:
             [button.handle_event(event) for button in button_ar]
         text_input.handle_event(event)
-        JournalText.handle_event(event)
-        JournalName.handle_event(event)
+        journal.JournalText.handle_event(event)
+        journal.JournalName.handle_event(event)
         for (loci, pack) in extra_event_handling:
             if CURRENT_SRC == loci or loci == "any":
                 for obj in pack:
@@ -722,8 +785,8 @@ while running:
     if studytimersection.timerRunning: studytimersection.update()
 
     text_input.draw(screen)
-    JournalText.draw(screen)
-    JournalName.draw(screen)
+    journal.JournalText.draw(screen)
+    journal.JournalName.draw(screen)
 
     
     if full_hand_tracking:
