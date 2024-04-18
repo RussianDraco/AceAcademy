@@ -1,9 +1,8 @@
 import pygame as pg
-import sys
-import os
-import json
+import sys, os, json, cv2, pyautogui, time
 import math, cv2, pyautogui
 import mediapipe as mp
+import hand_tracking_landmarks as htl
 import numpy as np
 
 # Initialize pg
@@ -26,7 +25,12 @@ home_intro_text = "EduHub is an integrated web and mobile platform designed to e
 # Accessibility
 full_hand_tracking = True
 camera_width, camera_height = 640, 480
-
+Screen_Width, Screen_Height = pyautogui.size()
+pTime = 0
+smoothening = 8
+previous_x, previous_y = 0, 0
+current_y, current_x = 0, 0
+showtheimage = False
 
 # Create the screen
 screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -528,13 +532,54 @@ while running:
     text_input.draw(screen)
     
     if full_hand_tracking:
-       #while True:
-       #     caption = cv2.VideoCapture(0)
-       #     caption.set(3, camera_width)
-       #     caption.set(4, camera_height)
-       #     success, img = caption.read()
-       #     
-       #     cv2.imshow("Face_Cam", img)
+        
+        cap = cv2.VideoCapture(0)
+        detector = htl.HandDetector()
+        #while True:
+        ret, frame = cap.read()
+        detector.analyse(frame)
+        frame = detector.detection(frame)
+        frame_width, frame_height, _ = frame.shape
+        
+        LmList = detector.position(frame)
+        
+        if len(LmList) != 0:
+            
+            x1, y1 = LmList[8][1:] #pointer
+            x1, y1 = LmList[12][1:] #middle
+            
+            fingers = detector.fingers_up()
+            
+            if fingers[1] == 1 and fingers[2] == 0: #just move
+                x3 = np.interp(x1, (0, frame_width), (0, Screen_Width))
+                y3 = np.interp(y1, (0, frame_height), (0, Screen_Height))
+                
+                current_x = previous_x + (x3 - previous_x) / smoothening
+                current_y = previous_y + (y3 - previous_y) / smoothening
+                
+                pyautogui.moveTo(Screen_Width-current_x, current_y)
+                
+                previous_x, previous_y = current_x, current_y
+                
+            if fingers[1] == 1 and fingers[2] == 1: #CLICKY CLICKY
+                distance = detector.find_distance(8, 12)  #pointer and middle finger
+                if distance <= 75:
+                    pyautogui.click()
+                    cv2.circle(frame, (x1, y1), 15, (0,255,0), cv2.FILLED)
+                
+        cTime = time.time()
+        fps = 1/(cTime-pTime)
+        pTime = cTime
+        
+        frame = cv2.flip(frame, 1)
+        cv2.putText(frame, str(int(fps)), (20,50), cv2.FONT_HERSHEY_PLAIN, 3, (255,0,0), 3)
+        
+        if showtheimage:
+            cv2.imshow('Hand Mouse Control', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'): #press q to kill 
+            cap.release()
+            cv2.destroyAllWindows()
+            break
         
 
     # Update the display
